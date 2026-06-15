@@ -1,8 +1,13 @@
 package org.barbertrack.barbertrack_poo.model;
 
-import java.time.LocalDate;
+import java.io.Serial;
+import java.io.Serializable;
 
-public class Cliente {
+public class Cliente implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private String nome;
     private String telefone;
     private String email;

@@ -1,8 +1,14 @@
 package org.barbertrack.barbertrack_poo.model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class Agendamento {
+public class Agendamento implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private LocalDateTime dataAgendamento;
     private Cliente cliente;
     private Servico servico;
