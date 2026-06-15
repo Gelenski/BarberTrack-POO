@@ -61,7 +61,7 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>
-                                org.barbertrack.barbertrack_poo/org.barbertrack.barbertrack_poo.HelloApplication
+                                org.barbertrack.barbertrack_poo/org.barbertrack.barbertrack_poo.app.Main
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>

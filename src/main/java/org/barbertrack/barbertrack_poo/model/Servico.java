@@ -1,6 +1,12 @@
 package org.barbertrack.barbertrack_poo.model;
 
-public class Servico {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class Servico implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private String nome;
     private int duracao; // Minutos
