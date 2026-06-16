@@ -8,6 +8,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.barbertrack.barbertrack_poo.views.BarbeariaView;
 import org.barbertrack.barbertrack_poo.views.ClienteView;
+import org.barbertrack.barbertrack_poo.views.HorarioFuncionamentoView;
 import org.barbertrack.barbertrack_poo.views.ServicoView;
 
 public class Main extends Application {
@@ -31,7 +32,12 @@ public class Main extends Application {
             new BarbeariaView().start(new Stage());
         });
 
-        VBox root = new VBox(10, btnServicos, btnClientes, btnBarbearias);
+        Button btnHorarioFuncionamento = new Button("Gerenciar Horários de Funcionamentos");
+        btnHorarioFuncionamento.setOnAction(e -> {
+            new HorarioFuncionamentoView().start(new Stage());
+        });
+
+        VBox root = new VBox(10, btnServicos, btnClientes, btnBarbearias, btnHorarioFuncionamento);
         root.setPadding(new Insets(12));
 
         stage.setScene(new Scene(root, 400, 300));
