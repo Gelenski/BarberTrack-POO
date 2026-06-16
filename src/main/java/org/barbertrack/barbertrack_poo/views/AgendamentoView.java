@@ -14,9 +14,12 @@ import javafx.stage.Stage;
 import org.barbertrack.barbertrack_poo.model.Agendamento;
 import org.barbertrack.barbertrack_poo.model.Cliente;
 import org.barbertrack.barbertrack_poo.model.Servico;
+import org.barbertrack.barbertrack_poo.repository.RepositoryManager;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 
 public class AgendamentoView extends Application {
     private static final String ARQUIVO = "data/agendamentos.dat";
@@ -49,6 +52,38 @@ public class AgendamentoView extends Application {
         Label labelDataHora = new Label("Data agendamento");
         campoDataHora = new TextField();
         campoDataHora.setPromptText("dd/MM/yyyy HH:mm");
+        campoDataHora.textProperty().addListener((obs, oldValue, newValue) -> {
+
+            String numeros = newValue.replaceAll("[^0-9]", "");
+
+            if (numeros.length() > 12) {
+                numeros = numeros.substring(0, 12);
+            }
+
+            StringBuilder texto = new StringBuilder();
+
+            for (int i = 0; i < numeros.length(); i++) {
+
+                if (i == 2 || i == 4) {
+                    texto.append("/");
+                }
+
+                if (i == 8) {
+                    texto.append(" ");
+                }
+
+                if (i == 10) {
+                    texto.append(":");
+                }
+
+                texto.append(numeros.charAt(i));
+            }
+
+            if (!texto.toString().equals(newValue)) {
+                campoDataHora.setText(texto.toString());
+                campoDataHora.positionCaret(texto.length());
+            }
+        });
 
         Button btnSalvar = new Button("Salvar");
         Button btnCancelar = new Button("Cancelar");
@@ -114,8 +149,241 @@ public class AgendamentoView extends Application {
         stage.setScene(scene);
         stage.show();
 
+        carregarClientes();
+        carregarServicos();
+        carregarAgendamentos();
+
+        comboCliente.setItems(clientes);
+        comboServico.setItems(servicos);
+
+        btnSalvar.setOnAction(e -> {
+
+            if (!validarCampos()) return;
+
+            LocalDateTime data =
+                    LocalDateTime.parse(
+                            campoDataHora.getText().trim(),
+                            formatter
+                    );
+
+            Cliente cliente = comboCliente.getValue();
+            Servico servico = comboServico.getValue();
+
+            if (agendamentoEmEdicao == null) {
+
+                Agendamento novo = new Agendamento(data, cliente, servico);
+
+                agendamentos.add(novo);
+
+            } else {
+
+                agendamentoEmEdicao.setCliente(cliente);
+                agendamentoEmEdicao.setServico(servico);
+                agendamentoEmEdicao.setDataAgendamento(data);
+
+                tabela.refresh();
+
+                agendamentoEmEdicao = null;
+                btnCancelar.setDisable(true);
+            }
+
+            limparFormulario();
+            salvarDados();
+        });
+
+        btnCancelar.setOnAction(e -> {
+
+            agendamentoEmEdicao = null;
+
+            limparFormulario();
+
+            btnCancelar.setDisable(true);
+        });
+
+        btnEditar.setOnAction(e -> {
+
+            Agendamento selecionado =
+                    tabela.getSelectionModel()
+                            .getSelectedItem();
+
+            if (selecionado == null) {
+
+                alerta("Selecione um agendamento para editar.");
+
+                return;
+            }
+
+            agendamentoEmEdicao = selecionado;
+
+            comboCliente.setValue(
+                    selecionado.getCliente()
+            );
+
+            comboServico.setValue(
+                    selecionado.getServico()
+            );
+
+            campoDataHora.setText(
+                    selecionado.getDataAgendamento()
+                            .format(formatter)
+            );
+
+            btnCancelar.setDisable(false);
+        });
+
+        btnDeletar.setOnAction(e -> {
+
+            Agendamento selecionado =
+                    tabela.getSelectionModel()
+                            .getSelectedItem();
+
+            if (selecionado == null) {
+
+                alerta("Selecione um agendamento para deletar.");
+
+                return;
+            }
+
+            Alert confirm = new Alert(
+                    Alert.AlertType.CONFIRMATION,
+                    "Deletar agendamento?",
+                    ButtonType.YES,
+                    ButtonType.NO
+            );
+
+            confirm.showAndWait()
+                    .ifPresent(resp -> {
+
+                        if (resp == ButtonType.YES) {
+
+                            agendamentos.remove(
+                                    selecionado
+                            );
+
+                            salvarDados();
+                        }
+                    });
+        });
+
 
 
     }
+    private boolean validarCampos() {
+
+        if (comboCliente.getValue() == null) {
+
+            alerta("Selecione um cliente.");
+
+            return false;
+        }
+
+        if (comboServico.getValue() == null) {
+
+            alerta("Selecione um serviço.");
+
+            return false;
+        }
+
+        try {
+
+            DateTimeFormatter formatter =
+                    DateTimeFormatter.ofPattern(
+                            "dd/MM/yyyy HH:mm"
+                    );
+
+            LocalDateTime.parse(
+                    campoDataHora.getText().trim(),
+                    formatter
+            );
+
+        } catch (DateTimeParseException e) {
+
+            alerta(
+                    "Data inválida."
+            );
+
+            return false;
+        }
+
+        return true;
+    }
+    private void limparFormulario() {
+
+        comboCliente.setValue(null);
+
+        comboServico.setValue(null);
+
+        campoDataHora.clear();
+    }
+    private void salvarDados() {
+
+        ArrayList<Object> dados =
+                new ArrayList<>(agendamentos);
+
+        RepositoryManager.salvar(
+                ARQUIVO,
+                dados
+        );
+    }
+    @SuppressWarnings("unchecked")
+    private void carregarClientes() {
+
+        ArrayList<Object> dados =
+                RepositoryManager.carregar(
+                        "data/clientes.dat"
+                );
+
+        for (Object obj : dados) {
+
+            if (obj instanceof Cliente) {
+
+                clientes.add(
+                        (Cliente) obj
+                );
+            }
+        }
+    }
+    @SuppressWarnings("unchecked")
+    private void carregarServicos() {
+
+        ArrayList<Object> dados =
+                RepositoryManager.carregar(
+                        "data/servicos.dat"
+                );
+
+        for (Object obj : dados) {
+
+            if (obj instanceof Servico servico) {
+
+                if (servico.isStatus()) {
+
+                    servicos.add(servico);
+                }
+            }
+        }
+    }
+    @SuppressWarnings("unchecked")
+    private void carregarAgendamentos() {
+
+        ArrayList<Object> dados =
+                RepositoryManager.carregar(ARQUIVO);
+
+        for (Object obj : dados) {
+
+            if (obj instanceof Agendamento) {
+
+                agendamentos.add((Agendamento) obj);
+            }
+        }
+    }
+    private void alerta(String mensagem) {
+
+        new Alert(
+                Alert.AlertType.WARNING,
+                mensagem,
+                ButtonType.OK
+        ).showAndWait();
+    }
+
 
 }
