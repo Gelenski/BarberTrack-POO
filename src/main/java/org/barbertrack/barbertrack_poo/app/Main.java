@@ -29,7 +29,7 @@ public class Main extends Application {
         root.setPadding(new Insets(12));
 
         stage.setScene(new Scene(root, 400, 300));
-        stage.show(); // só aqui
+        stage.show();
     }
 
     public static void main(String[] args) {
