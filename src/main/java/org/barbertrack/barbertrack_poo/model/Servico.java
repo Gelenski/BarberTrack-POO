@@ -40,4 +40,10 @@ public class Servico implements Serializable {
     public void setStatus(boolean status) {
         this.status = status;
     }
+
+    //para a view de agendamento
+    @Override
+    public String toString() {
+        return nome;
+    }
 }

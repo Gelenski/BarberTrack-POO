@@ -41,9 +41,13 @@ public class HorarioFuncionamentoView extends Application {
 
         Label labelHorarioAbertura = new Label("Horário Abertura:");
         campoHorarioAbertura = new TextField();
+        campoHorarioAbertura.setPromptText("HH:mm");
+        aplicarMascaraHorario(campoHorarioAbertura);
 
         Label labelHorarioFechamento = new Label("Horário Fechamento:");
         campoHorarioFechamento = new TextField();
+        campoHorarioFechamento.setPromptText("HH:mm");
+        aplicarMascaraHorario(campoHorarioFechamento);
 
         Button btnSalvar = new Button("Salvar");
         Button btnCancelar = new Button("Cancelar");
@@ -66,7 +70,7 @@ public class HorarioFuncionamentoView extends Application {
         form.add(campoHorarioFechamento, 1, 2);
 
         HBox botoes = new HBox(8, btnSalvar, btnCancelar);
-        form.add(botoes, 1, 4);
+        form.add(botoes, 1, 3);
 
         tabela = new TableView<>();
 
@@ -256,27 +260,63 @@ public class HorarioFuncionamentoView extends Application {
     private boolean validarCampos() {
 
         if (campoDiaSemana.getText().isBlank()) {
-
             alerta("Informe o dia da semana.");
-
             return false;
         }
 
-        if (campoHorarioAbertura.getText().isBlank()) {
-
-            alerta("Informe o horário de abertura.");
-
+        if (!validarHorario(campoHorarioAbertura.getText())) {
+            alerta("Horário de abertura inválido. Use o formato HH:mm (ex: 08:00).");
             return false;
         }
 
-        if (campoHorarioFechamento.getText().isBlank()) {
+        if (!validarHorario(campoHorarioFechamento.getText())) {
+            alerta("Horário de fechamento inválido. Use o formato HH:mm (ex: 18:00).");
+            return false;
+        }
 
-            alerta("Informe o horário de fechamento.");
-
+        if (!horarioFechamentoMaiorQueAbertura()) {
+            alerta("O horário de fechamento deve ser maior que o de abertura.");
             return false;
         }
 
         return true;
+    }
+
+    private boolean validarHorario(String horario) {
+        if (!horario.matches("\\d{2}:\\d{2}")) return false;
+        String[] partes = horario.split(":");
+        int hora = Integer.parseInt(partes[0]);
+        int minuto = Integer.parseInt(partes[1]);
+        return hora >= 0 && hora <= 23 && minuto >= 0 && minuto <= 59;
+    }
+
+    private boolean horarioFechamentoMaiorQueAbertura() {
+        String[] abertura = campoHorarioAbertura.getText().split(":");
+        String[] fechamento = campoHorarioFechamento.getText().split(":");
+        int minutosAbertura = Integer.parseInt(abertura[0]) * 60 + Integer.parseInt(abertura[1]);
+        int minutosFechamento = Integer.parseInt(fechamento[0]) * 60 + Integer.parseInt(fechamento[1]);
+        return minutosFechamento > minutosAbertura;
+    }
+
+    private void aplicarMascaraHorario(TextField campo) {
+        campo.textProperty().addListener((obs, oldValue, newValue) -> {
+            String numeros = newValue.replaceAll("[^0-9]", "");
+
+            if (numeros.length() > 4) {
+                numeros = numeros.substring(0, 4);
+            }
+
+            StringBuilder texto = new StringBuilder();
+            for (int i = 0; i < numeros.length(); i++) {
+                if (i == 2) texto.append(":");
+                texto.append(numeros.charAt(i));
+            }
+
+            if (!texto.toString().equals(newValue)) {
+                campo.setText(texto.toString());
+                campo.positionCaret(texto.length());
+            }
+        });
     }
 
     private void limparFormulario() {

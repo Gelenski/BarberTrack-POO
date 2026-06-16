@@ -41,4 +41,10 @@ public class Cliente implements Serializable {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    //para a view de agendamento
+    @Override
+    public String toString() {
+        return nome;
+    }
 }
