@@ -52,10 +52,10 @@ public class BarbeariaView extends Application {
         form.setPadding(new Insets(10));
         form.add(labelRazaoSocial, 0, 0);
         form.add(campoRazaoSocial, 1, 0);
-        form.add(labelNomeFantasia, 2, 0);
-        form.add(campoNomeFantasia, 3, 0);
-        form.add(labelEmail, 0, 1);
-        form.add(campoEmail, 1, 1);
+        form.add(labelNomeFantasia, 0, 1);
+        form.add(campoNomeFantasia, 1, 1);
+        form.add(labelEmail, 0, 2);
+        form.add(campoEmail, 1, 2);
 
         HBox botoes = new HBox(8, btnSalvar, btnCancelar);
         form.add(botoes, 1, 3);
