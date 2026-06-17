@@ -11,10 +11,12 @@ public class Servico implements Serializable {
     private String nome;
     private int duracao; // Minutos
     private boolean status = true; // True -> Ativo/False -> Inativo
+    private CategoriaServico categoriaServico;
 
-    public Servico(String nome, int duracao) {
+    public Servico(String nome, int duracao, CategoriaServico categoriaServico) {
         this.nome = nome;
         this.duracao = duracao;
+        this.categoriaServico = categoriaServico;
     }
 
     public String getNome() {
@@ -41,9 +43,16 @@ public class Servico implements Serializable {
         this.status = status;
     }
 
-    //para a view de agendamento
     @Override
     public String toString() {
         return nome;
+    }
+
+    public CategoriaServico getCategoriaServico() {
+        return categoriaServico;
+    }
+
+    public void setCategoriaServico(CategoriaServico categoriaServico) {
+        this.categoriaServico = categoriaServico;
     }
 }

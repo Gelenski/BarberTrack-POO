@@ -186,7 +186,6 @@ public class ClienteView extends Application {
         RepositoryManager.salvar(ARQUIVO, dados);
     }
 
-    @SuppressWarnings("unchecked")
     private void carregarDados() {
         ArrayList<Object> dados = RepositoryManager.carregar(ARQUIVO);
         for (Object obj : dados) {

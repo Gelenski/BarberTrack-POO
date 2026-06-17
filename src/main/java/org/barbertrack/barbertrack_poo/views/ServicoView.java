@@ -10,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import org.barbertrack.barbertrack_poo.model.CategoriaServico;
 import org.barbertrack.barbertrack_poo.model.Servico;
 import org.barbertrack.barbertrack_poo.repository.RepositoryManager;
 
@@ -18,13 +19,16 @@ import java.util.ArrayList;
 public class ServicoView extends Application {
 
     private static final String ARQUIVO = "data/servicos.dat";
+    private static final String CATEGORIA_ARQUIVO = "data/categorias.dat";
 
     private final ObservableList<Servico> servicos = FXCollections.observableArrayList();
+    private final ObservableList<CategoriaServico> categoria = FXCollections.observableArrayList();
     private TableView<Servico> tabela;
 
     private TextField campoNome;
     private TextField campoDuracao;
     private CheckBox checkStatus;
+    private ComboBox<CategoriaServico> campoCategoria;
 
     private Servico servicoEmEdicao = null;
 
@@ -44,6 +48,14 @@ public class ServicoView extends Application {
         checkStatus = new CheckBox();
         checkStatus.setSelected(true);
 
+        campoCategoria = new ComboBox<>();
+        campoCategoria.setItems(categoria);
+        campoCategoria.setPromptText("Selecione uma categoria");
+
+        Button btnEditarCategoria = new Button("Editar Categoria");
+        Button btnAddCategoria = new Button("Adicionar Categoria");
+        Button btnRemoverCategoria = new Button("Remover Categoria");
+
         Button btnSalvar = new Button("Salvar");
         Button btnCancelar = new Button("Cancelar");
         btnCancelar.setDisable(true);
@@ -58,13 +70,17 @@ public class ServicoView extends Application {
         form.add(campoDuracao, 1, 1);
         form.add(labelStatus, 0, 2);
         form.add(checkStatus, 1, 2);
+        form.add(campoCategoria, 2, 0);
+        form.add(btnAddCategoria, 2, 1);
+        form.add(btnEditarCategoria, 2, 2);
+        form.add(btnRemoverCategoria, 2, 3);
 
         HBox botoes = new HBox(8, btnSalvar, btnCancelar);
         form.add(botoes, 1, 3);
 
         tabela = new TableView<>();
         tabela.setItems(servicos);
-        tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
         TableColumn<Servico, String> colNome = new TableColumn<>("Nome");
         colNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
@@ -77,7 +93,18 @@ public class ServicoView extends Application {
         colStatus.setCellValueFactory(c ->
                 new SimpleStringProperty(c.getValue().isStatus() ? "Ativo" : "Inativo"));
 
-        tabela.getColumns().addAll(colNome, colDuracao, colStatus);
+        TableColumn<Servico, String> colCategoria = new TableColumn<>("Categoria");
+        colCategoria.setCellValueFactory(c -> {
+            CategoriaServico categoriaServico = c.getValue().getCategoriaServico();
+
+            if (categoriaServico == null) {
+                return new SimpleStringProperty("Sem categoria");
+            }
+
+            return new SimpleStringProperty(categoriaServico.getNome());
+        });
+
+        tabela.getColumns().addAll(colNome, colDuracao, colStatus, colCategoria);
 
         Button btnEditar = new Button("Editar selecionado");
         Button btnDeletar = new Button("Deletar selecionado");
@@ -92,18 +119,20 @@ public class ServicoView extends Application {
         stage.setScene(scene);
         stage.show();
 
-        carregarDados();
+        carregarCategorias();
+        carregarServicos();
 
         btnSalvar.setOnAction(e -> {
             if (!validarCampos()) return;
 
             String nome = campoNome.getText().trim();
             int duracao = Integer.parseInt(campoDuracao.getText().trim());
+            CategoriaServico categoria = campoCategoria.getSelectionModel().getSelectedItem();
             boolean status = checkStatus.isSelected();
 
             if (servicoEmEdicao == null) {
                 // Novo serviço
-                Servico novo = new Servico(nome, duracao);
+                Servico novo = new Servico(nome, duracao, categoria);
                 novo.setStatus(status);
                 servicos.add(novo);
             } else {
@@ -111,6 +140,7 @@ public class ServicoView extends Application {
                 servicoEmEdicao.setNome(nome);
                 servicoEmEdicao.setDuracao(duracao);
                 servicoEmEdicao.setStatus(status);
+                servicoEmEdicao.setCategoriaServico(categoria);
                 tabela.refresh();
                 servicoEmEdicao = null;
                 btnCancelar.setDisable(true);
@@ -136,6 +166,7 @@ public class ServicoView extends Application {
             campoNome.setText(selecionado.getNome());
             campoDuracao.setText(String.valueOf(selecionado.getDuracao()));
             checkStatus.setSelected(selecionado.isStatus());
+            campoCategoria.getSelectionModel().select(selecionado.getCategoriaServico());
             btnCancelar.setDisable(false);
         });
 
@@ -156,14 +187,69 @@ public class ServicoView extends Application {
                 }
             });
         });
-    }
 
+        btnAddCategoria.setOnAction(e -> {
+            CategoriaServico novaCategoria = new CategoriaModal().show(stage);
+
+            if (novaCategoria != null) {
+                categoria.add(novaCategoria);
+                campoCategoria.getSelectionModel().select(novaCategoria);
+                salvarCategorias();
+            }
+        });
+
+        btnEditarCategoria.setOnAction(e -> {
+            CategoriaServico categoriaSelecionada = campoCategoria.getSelectionModel().getSelectedItem();
+
+            if (categoriaSelecionada == null) {
+                alerta("Selecione uma categoria para editar.");
+                return;
+            }
+
+            new CategoriaEditarModal().show(stage, categoriaSelecionada);
+
+            for (Servico s : servicos) {
+                if (s.getCategoriaServico() != null
+                        && s.getCategoriaServico().equals(categoriaSelecionada)) {
+                    s.setCategoriaServico(categoriaSelecionada);
+                }
+            }
+
+            campoCategoria.getSelectionModel().select(categoriaSelecionada);
+            salvarCategorias();
+            salvarDados();
+            tabela.refresh();
+        });
+
+        btnRemoverCategoria.setOnAction(e -> {
+            CategoriaServico categoriaSelecionada = campoCategoria.getSelectionModel().getSelectedItem();
+
+            if (categoriaSelecionada == null) {
+                alerta("Selecione uma categoria para remover.");
+                return;
+            }
+
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                    "Remover \"" + categoriaSelecionada.getNome() + "\"?",
+                    ButtonType.YES, ButtonType.NO);
+            confirm.showAndWait().ifPresent(resp -> {
+                if (resp == ButtonType.YES) {
+                    categoria.remove(categoriaSelecionada);
+                    campoCategoria.getSelectionModel().clearSelection();
+                    salvarCategorias();
+                    salvarDados();
+                    tabela.refresh();
+                }
+            });
+        });
+    }
 
     private boolean validarCampos() {
         if (campoNome.getText().isBlank()) {
             alerta("Informe o nome do serviço.");
             return false;
         }
+
         try {
             int d = Integer.parseInt(campoDuracao.getText().trim());
             if (d <= 0) throw new NumberFormatException();
@@ -171,6 +257,12 @@ public class ServicoView extends Application {
             alerta("Duração deve ser um número inteiro positivo.");
             return false;
         }
+
+        if (campoCategoria.getSelectionModel().getSelectedItem() == null) {
+            alerta("Selecione uma categoria para o serviço.");
+            return false;
+        }
+
         return true;
     }
 
@@ -178,6 +270,7 @@ public class ServicoView extends Application {
         campoNome.clear();
         campoDuracao.clear();
         checkStatus.setSelected(true);
+        campoCategoria.getSelectionModel().clearSelection();
     }
 
     private void salvarDados() {
@@ -185,12 +278,27 @@ public class ServicoView extends Application {
         RepositoryManager.salvar(ARQUIVO, dados);
     }
 
-    @SuppressWarnings("unchecked")
-    private void carregarDados() {
+    private void salvarCategorias() {
+        ArrayList<Object> categorias = new ArrayList<>(categoria);
+        RepositoryManager.salvar(CATEGORIA_ARQUIVO, categorias);
+    }
+
+    private void carregarServicos() {
         ArrayList<Object> dados = RepositoryManager.carregar(ARQUIVO);
         for (Object obj : dados) {
             if (obj instanceof Servico) {
                 servicos.add((Servico) obj);
+            }
+        }
+    }
+
+    private void carregarCategorias() {
+        ArrayList<Object> dados = RepositoryManager.carregar(CATEGORIA_ARQUIVO);
+        categoria.clear();
+
+        for (Object obj : dados) {
+            if (obj instanceof CategoriaServico) {
+                categoria.add((CategoriaServico) obj);
             }
         }
     }
