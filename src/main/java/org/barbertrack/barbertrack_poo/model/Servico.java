@@ -43,6 +43,11 @@ public class Servico implements Serializable {
         this.status = status;
     }
 
+    @Override
+    public String toString() {
+        return nome;
+    }
+
     public CategoriaServico getCategoriaServico() {
         return categoriaServico;
     }
