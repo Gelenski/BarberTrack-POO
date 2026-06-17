@@ -1,9 +1,13 @@
 package org.barbertrack.barbertrack_poo.model;
 
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
 
 public class CategoriaServico implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private String nome;
     private String descricao;
     private boolean status; // True -> Ativo/False -> Inativo
@@ -36,5 +40,10 @@ public class CategoriaServico implements Serializable {
 
     public void setStatus(boolean status) {
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return nome;
     }
 }

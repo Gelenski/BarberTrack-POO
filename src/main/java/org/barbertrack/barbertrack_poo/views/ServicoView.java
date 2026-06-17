@@ -50,7 +50,8 @@ public class ServicoView extends Application {
 
         Label labelCategoria = new Label("Categoria:");
         campoCategoria = new ComboBox<>();
-        campoCategoria.getItems().addAll();
+        campoCategoria.setItems(categoria);
+        campoCategoria.setPromptText("Selecione uma categoria");
 
         Button btnAddCategoria = new Button("Adicionar Categoria");
 
@@ -91,9 +92,15 @@ public class ServicoView extends Application {
                 new SimpleStringProperty(c.getValue().isStatus() ? "Ativo" : "Inativo"));
 
         TableColumn<Servico, String> colCategoria = new TableColumn<>("Categoria");
-        colCategoria.setCellValueFactory(c ->
-                new SimpleStringProperty(String.valueOf(c.getValue().getCategoriaServico().getNome()))
-        );
+        colCategoria.setCellValueFactory(c -> {
+            CategoriaServico categoriaServico = c.getValue().getCategoriaServico();
+
+            if (categoriaServico == null) {
+                return new SimpleStringProperty("Sem categoria");
+            }
+
+            return new SimpleStringProperty(categoriaServico.getNome());
+        });
 
         tabela.getColumns().addAll(colNome, colDuracao, colStatus, colCategoria);
 
@@ -180,16 +187,22 @@ public class ServicoView extends Application {
         });
         
         btnAddCategoria.setOnAction(e -> {
-            new CategoriaModal().show(stage);
+            CategoriaServico novaCategoria = new CategoriaModal().show(stage);
+
+            if (novaCategoria != null) {
+                categoria.add(novaCategoria);
+                campoCategoria.getSelectionModel().select(novaCategoria);
+                salvarCategorias();
+            }
         });
     }
-
 
     private boolean validarCampos() {
         if (campoNome.getText().isBlank()) {
             alerta("Informe o nome do serviço.");
             return false;
         }
+
         try {
             int d = Integer.parseInt(campoDuracao.getText().trim());
             if (d <= 0) throw new NumberFormatException();
@@ -197,6 +210,12 @@ public class ServicoView extends Application {
             alerta("Duração deve ser um número inteiro positivo.");
             return false;
         }
+
+        if (campoCategoria.getSelectionModel().getSelectedItem() == null) {
+            alerta("Selecione uma categoria para o serviço.");
+            return false;
+        }
+
         return true;
     }
 
@@ -209,8 +228,11 @@ public class ServicoView extends Application {
 
     private void salvarDados() {
         ArrayList<Object> dados = new ArrayList<>(servicos);
-        ArrayList<Object> categorias = new ArrayList<>(categoria);
         RepositoryManager.salvar(ARQUIVO, dados);
+    }
+
+    private void salvarCategorias() {
+        ArrayList<Object> categorias = new ArrayList<>(categoria);
         RepositoryManager.salvar(CATEGORIA_ARQUIVO, categorias);
     }
 
@@ -225,6 +247,8 @@ public class ServicoView extends Application {
 
     private void carregarCategorias() {
         ArrayList<Object> dados = RepositoryManager.carregar(CATEGORIA_ARQUIVO);
+        categoria.clear();
+
         for (Object obj : dados) {
             if (obj instanceof CategoriaServico) {
                 categoria.add((CategoriaServico) obj);
