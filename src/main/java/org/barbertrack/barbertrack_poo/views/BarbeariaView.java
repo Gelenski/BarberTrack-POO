@@ -97,22 +97,23 @@ public class BarbeariaView extends Application {
             String nomeFantasia = campoNomeFantasia.getText().trim();
             String email = campoEmail.getText().trim();
 
-            if (barbeariaEmEdicao == null) {
-                // nova barbearia
-                Barbearia novo = new Barbearia(razaoSocial, nomeFantasia, email);
-                barbearias.add(novo);
-            } else {
-                // Atualizar existente
-                barbeariaEmEdicao.setRazaoSocial(razaoSocial);
-                barbeariaEmEdicao.setNomeFantasia(nomeFantasia);
-                barbeariaEmEdicao.setEmail(email);
-                tabela.refresh();
-                barbeariaEmEdicao = null;
-                btnCancelar.setDisable(true);
+            try {
+                if (barbeariaEmEdicao == null) {
+                    Barbearia novo = new Barbearia(razaoSocial, nomeFantasia, email);
+                    barbearias.add(novo);
+                } else {
+                    barbeariaEmEdicao.setRazaoSocial(razaoSocial);
+                    barbeariaEmEdicao.setNomeFantasia(nomeFantasia);
+                    barbeariaEmEdicao.setEmail(email);
+                    tabela.refresh();
+                    barbeariaEmEdicao = null;
+                    btnCancelar.setDisable(true);
+                }
+                limparFormulario();
+                salvarDados();
+            } catch (Exception ex) {
+                alerta(ex.getMessage());
             }
-
-            limparFormulario();
-            salvarDados();
         });
 
         btnCancelar.setOnAction(e -> {

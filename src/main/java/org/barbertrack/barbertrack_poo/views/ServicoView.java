@@ -130,24 +130,25 @@ public class ServicoView extends Application {
             CategoriaServico categoria = campoCategoria.getSelectionModel().getSelectedItem();
             boolean status = checkStatus.isSelected();
 
-            if (servicoEmEdicao == null) {
-                // Novo serviço
-                Servico novo = new Servico(nome, duracao, categoria);
-                novo.setStatus(status);
-                servicos.add(novo);
-            } else {
-                // Atualizar existente
-                servicoEmEdicao.setNome(nome);
-                servicoEmEdicao.setDuracao(duracao);
-                servicoEmEdicao.setStatus(status);
-                servicoEmEdicao.setCategoriaServico(categoria);
-                tabela.refresh();
-                servicoEmEdicao = null;
-                btnCancelar.setDisable(true);
+            try {
+                if (servicoEmEdicao == null) {
+                    Servico novo = new Servico(nome, duracao, categoria);
+                    novo.setStatus(status);
+                    servicos.add(novo);
+                } else {
+                    servicoEmEdicao.setNome(nome);
+                    servicoEmEdicao.setDuracao(duracao);
+                    servicoEmEdicao.setStatus(status);
+                    servicoEmEdicao.setCategoriaServico(categoria);
+                    tabela.refresh();
+                    servicoEmEdicao = null;
+                    btnCancelar.setDisable(true);
+                }
+                limparFormulario();
+                salvarDados();
+            } catch (Exception ex) {
+                alerta(ex.getMessage());
             }
-
-            limparFormulario();
-            salvarDados();
         });
 
         btnCancelar.setOnAction(e -> {

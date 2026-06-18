@@ -121,21 +121,23 @@ public class EspecialidadeView extends Application {
                 return;
             }
 
-            if (especialidadeEmEdicao == null) {
-                Especialidade nova =
-                        new Especialidade(nome, descricao, nivel);
-                especialidades.add(nova);
-            } else {
-                especialidadeEmEdicao.setNome(nome);
-                especialidadeEmEdicao.setDescricao(descricao);
-                especialidadeEmEdicao.setNivelHabilidade(nivel);
-                tabela.refresh();
-                especialidadeEmEdicao = null;
-                btnCancelar.setDisable(true);
+            try {
+                if (especialidadeEmEdicao == null) {
+                    Especialidade nova = new Especialidade(nome, descricao, nivel);
+                    especialidades.add(nova);
+                } else {
+                    especialidadeEmEdicao.setNome(nome);
+                    especialidadeEmEdicao.setDescricao(descricao);
+                    especialidadeEmEdicao.setNivelHabilidade(nivel);
+                    tabela.refresh();
+                    especialidadeEmEdicao = null;
+                    btnCancelar.setDisable(true);
+                }
+                limparFormulario();
+                salvarDados();
+            } catch (Exception ex) {
+                alerta(ex.getMessage());
             }
-
-            limparFormulario();
-            salvarDados();
         });
 
         btnCancelar.setOnAction(e -> {
