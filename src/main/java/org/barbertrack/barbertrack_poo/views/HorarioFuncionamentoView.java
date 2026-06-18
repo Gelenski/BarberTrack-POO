@@ -150,33 +150,23 @@ public class HorarioFuncionamentoView extends Application {
             String horarioFechamento =
                     campoHorarioFechamento.getText().trim();
 
-            if (horarioFuncionamentoEmEdicao == null) {
-
-                HorarioFuncionamento novo =
-                        new HorarioFuncionamento(
-                                diaSemana,
-                                horarioAbertura,
-                                horarioFechamento
-                        );
-
-                horarioFuncionamentos.add(novo);
-
-            } else {
-
-                horarioFuncionamentoEmEdicao.setDiaSemana(diaSemana);
-                horarioFuncionamentoEmEdicao.setHorarioAbertura(horarioAbertura);
-                horarioFuncionamentoEmEdicao.setHorarioFechamento(horarioFechamento);
-
-                tabela.refresh();
-
-                horarioFuncionamentoEmEdicao = null;
-
-                btnCancelar.setDisable(true);
+            try {
+                if (horarioFuncionamentoEmEdicao == null) {
+                    HorarioFuncionamento novo = new HorarioFuncionamento(diaSemana, horarioAbertura, horarioFechamento);
+                    horarioFuncionamentos.add(novo);
+                } else {
+                    horarioFuncionamentoEmEdicao.setDiaSemana(diaSemana);
+                    horarioFuncionamentoEmEdicao.setHorarioAbertura(horarioAbertura);
+                    horarioFuncionamentoEmEdicao.setHorarioFechamento(horarioFechamento);
+                    tabela.refresh();
+                    horarioFuncionamentoEmEdicao = null;
+                    btnCancelar.setDisable(true);
+                }
+                limparFormulario();
+                salvarDados();
+            } catch (Exception ex) {
+                alerta(ex.getMessage());
             }
-
-            limparFormulario();
-
-            salvarDados();
         });
 
         btnCancelar.setOnAction(e -> {

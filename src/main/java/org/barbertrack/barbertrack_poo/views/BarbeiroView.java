@@ -164,35 +164,24 @@ public class BarbeiroView extends Application {
             String data =
                     campoDataAdmissao.getText().trim();
 
-            if (barbeiroEmEdicao == null) {
-
-                Barbeiro novo =
-                        new Barbeiro(
-                                nome,
-                                telefone,
-                                cpf,
-                                data
-                        );
-
-                barbeiros.add(novo);
-
-            } else {
-
-                barbeiroEmEdicao.setNome(nome);
-                barbeiroEmEdicao.setTelefone(telefone);
-                barbeiroEmEdicao.setCpf(cpf);
-                barbeiroEmEdicao.setDataAdmissao(data);
-
-                tabela.refresh();
-
-                barbeiroEmEdicao = null;
-
-                btnCancelar.setDisable(true);
+            try {
+                if (barbeiroEmEdicao == null) {
+                    Barbeiro novo = new Barbeiro(nome, telefone, cpf, data);
+                    barbeiros.add(novo);
+                } else {
+                    barbeiroEmEdicao.setNome(nome);
+                    barbeiroEmEdicao.setTelefone(telefone);
+                    barbeiroEmEdicao.setCpf(cpf);
+                    barbeiroEmEdicao.setDataAdmissao(data);
+                    tabela.refresh();
+                    barbeiroEmEdicao = null;
+                    btnCancelar.setDisable(true);
+                }
+                limparFormulario();
+                salvarDados();
+            } catch (Exception ex) {
+                alerta(ex.getMessage());
             }
-
-            limparFormulario();
-
-            salvarDados();
         });
 
         btnCancelar.setOnAction(e -> {

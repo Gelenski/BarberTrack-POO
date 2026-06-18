@@ -13,46 +13,42 @@ public class Barbeiro implements Serializable {
     private String cpf;
     private String dataAdmissao;
 
-    public Barbeiro(String nome,
-                    String telefone,
-                    String cpf,
-                    String dataAdmissao) {
-
-        this.nome = nome;
-        this.telefone = telefone;
-        this.cpf = cpf;
-        this.dataAdmissao = dataAdmissao;
+    public Barbeiro(String nome, String telefone, String cpf, String dataAdmissao) throws Exception {
+        setNome(nome);
+        setTelefone(telefone);
+        setCpf(cpf);
+        setDataAdmissao(dataAdmissao);
     }
 
-    public String getNome() {
-        return nome;
-    }
+    public String getNome() { return nome; }
 
-    public void setNome(String nome) {
+    public void setNome(String nome) throws Exception {
+        if (nome == null || nome.isBlank())
+            throw new Exception("O nome do barbeiro não pode ser vazio.");
         this.nome = nome;
     }
 
-    public String getTelefone() {
-        return telefone;
-    }
+    public String getTelefone() { return telefone; }
 
-    public void setTelefone(String telefone) {
+    public void setTelefone(String telefone) throws Exception {
+        if (telefone == null || telefone.isBlank())
+            throw new Exception("O telefone não pode ser vazio.");
         this.telefone = telefone;
     }
 
-    public String getCpf() {
-        return cpf;
-    }
+    public String getCpf() { return cpf; }
 
-    public void setCpf(String cpf) {
+    public void setCpf(String cpf) throws Exception {
+        if (cpf == null || !cpf.matches("\\d{11}"))
+            throw new Exception("CPF inválido. Deve conter exatamente 11 dígitos.");
         this.cpf = cpf;
     }
 
-    public String getDataAdmissao() {
-        return dataAdmissao;
-    }
+    public String getDataAdmissao() { return dataAdmissao; }
 
-    public void setDataAdmissao(String dataAdmissao) {
+    public void setDataAdmissao(String dataAdmissao) throws Exception {
+        if (dataAdmissao == null || !dataAdmissao.matches("\\d{2}/\\d{2}/\\d{4}"))
+            throw new Exception("Data de admissão inválida. Use o formato DD/MM/AAAA.");
         this.dataAdmissao = dataAdmissao;
     }
 }

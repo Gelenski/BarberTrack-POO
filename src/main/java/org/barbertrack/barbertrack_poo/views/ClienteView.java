@@ -97,22 +97,23 @@ public class ClienteView extends Application {
             String telefone = campoTelefone.getText().trim();
             String email = campoEmail.getText().trim();
 
-            if (clienteEmEdicao == null) {
-                // Novo cliente
-                Cliente novo = new Cliente(nome, telefone, email);
-                clientes.add(novo);
-            } else {
-                // Atualizar existente
-                clienteEmEdicao.setNome(nome);
-                clienteEmEdicao.setTelefone(telefone);
-                clienteEmEdicao.setEmail(email);
-                tabela.refresh();
-                clienteEmEdicao = null;
-                btnCancelar.setDisable(true);
+            try {
+                if (clienteEmEdicao == null) {
+                    Cliente novo = new Cliente(nome, telefone, email);
+                    clientes.add(novo);
+                } else {
+                    clienteEmEdicao.setNome(nome);
+                    clienteEmEdicao.setTelefone(telefone);
+                    clienteEmEdicao.setEmail(email);
+                    tabela.refresh();
+                    clienteEmEdicao = null;
+                    btnCancelar.setDisable(true);
+                }
+                limparFormulario();
+                salvarDados();
+            } catch (Exception ex) {
+                alerta(ex.getMessage());
             }
-
-            limparFormulario();
-            salvarDados();
         });
 
         btnCancelar.setOnAction(e -> {

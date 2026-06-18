@@ -10,49 +10,41 @@ public class Servico implements Serializable {
 
     private String nome;
     private int duracao; // Minutos
-    private boolean status = true; // True -> Ativo/False -> Inativo
+    private boolean status = true; // True -> Ativo / False -> Inativo
     private CategoriaServico categoriaServico;
 
-    public Servico(String nome, int duracao, CategoriaServico categoriaServico) {
-        this.nome = nome;
-        this.duracao = duracao;
+    public Servico(String nome, int duracao, CategoriaServico categoriaServico) throws Exception {
+        setNome(nome);
+        setDuracao(duracao);
         this.categoriaServico = categoriaServico;
     }
 
-    public String getNome() {
-        return nome;
-    }
+    public String getNome() { return nome; }
 
-    public void setNome(String nome) {
+    public void setNome(String nome) throws Exception {
+        if (nome == null || nome.isBlank())
+            throw new Exception("O nome do serviço não pode ser vazio.");
         this.nome = nome;
     }
 
-    public int getDuracao() {
-        return duracao;
-    }
+    public int getDuracao() { return duracao; }
 
-    public void setDuracao(int duracao) {
+    public void setDuracao(int duracao) throws Exception {
+        if (duracao <= 0)
+            throw new Exception("A duração deve ser maior que zero.");
         this.duracao = duracao;
     }
 
-    public boolean isStatus() {
-        return status;
-    }
+    public boolean isStatus() { return status; }
 
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
+    public void setStatus(boolean status) { this.status = status; }
 
-    @Override
-    public String toString() {
-        return nome;
-    }
-
-    public CategoriaServico getCategoriaServico() {
-        return categoriaServico;
-    }
+    public CategoriaServico getCategoriaServico() { return categoriaServico; }
 
     public void setCategoriaServico(CategoriaServico categoriaServico) {
         this.categoriaServico = categoriaServico;
     }
+
+    @Override
+    public String toString() { return nome; }
 }
