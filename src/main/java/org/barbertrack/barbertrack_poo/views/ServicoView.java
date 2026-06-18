@@ -22,7 +22,13 @@ public class ServicoView extends Application {
     private static final String CATEGORIA_ARQUIVO = "data/categorias.dat";
 
     private final ObservableList<Servico> servicos = FXCollections.observableArrayList();
+
+    // categoria: somente as categorias ATIVAS
     private final ObservableList<CategoriaServico> categoria = FXCollections.observableArrayList();
+
+    // categoria: todas as categorias
+    private final ObservableList<CategoriaServico> todasCategorias = FXCollections.observableArrayList();
+
     private TableView<Servico> tabela;
 
     private TextField campoNome;
@@ -55,6 +61,7 @@ public class ServicoView extends Application {
         Button btnEditarCategoria = new Button("Editar Categoria");
         Button btnAddCategoria = new Button("Adicionar Categoria");
         Button btnRemoverCategoria = new Button("Remover Categoria");
+        Button btnDetalhesCategoria = new Button("Ver Detalhes da Categoria");
 
         Button btnSalvar = new Button("Salvar");
         Button btnCancelar = new Button("Cancelar");
@@ -74,6 +81,7 @@ public class ServicoView extends Application {
         form.add(btnAddCategoria, 2, 1);
         form.add(btnEditarCategoria, 2, 2);
         form.add(btnRemoverCategoria, 2, 3);
+        form.add(btnDetalhesCategoria, 2, 4);
 
         HBox botoes = new HBox(8, btnSalvar, btnCancelar);
         form.add(botoes, 1, 3);
@@ -115,7 +123,7 @@ public class ServicoView extends Application {
         VBox root = new VBox(12, form, new Separator(), tabela, acoesTabela);
         root.setPadding(new Insets(12));
 
-        Scene scene = new Scene(root, 520, 460);
+        Scene scene = new Scene(root, 560, 480);
         stage.setScene(scene);
         stage.show();
 
@@ -192,8 +200,13 @@ public class ServicoView extends Application {
             CategoriaServico novaCategoria = new CategoriaModal().show(stage);
 
             if (novaCategoria != null) {
-                categoria.add(novaCategoria);
-                campoCategoria.getSelectionModel().select(novaCategoria);
+                todasCategorias.add(novaCategoria);
+
+                if (novaCategoria.isStatus()) {
+                    categoria.add(novaCategoria);
+                    campoCategoria.getSelectionModel().select(novaCategoria);
+                }
+
                 salvarCategorias();
             }
         });
@@ -215,10 +228,17 @@ public class ServicoView extends Application {
                 }
             }
 
-            campoCategoria.getSelectionModel().select(categoriaSelecionada);
             salvarCategorias();
             salvarDados();
             tabela.refresh();
+
+            CategoriaServico selecionadaAtual = categoriaSelecionada;
+            recarregarComboCategorias();
+            if (selecionadaAtual.isStatus()) {
+                campoCategoria.getSelectionModel().select(selecionadaAtual);
+            } else {
+                campoCategoria.getSelectionModel().clearSelection();
+            }
         });
 
         btnRemoverCategoria.setOnAction(e -> {
@@ -235,12 +255,24 @@ public class ServicoView extends Application {
             confirm.showAndWait().ifPresent(resp -> {
                 if (resp == ButtonType.YES) {
                     categoria.remove(categoriaSelecionada);
+                    todasCategorias.remove(categoriaSelecionada);
                     campoCategoria.getSelectionModel().clearSelection();
                     salvarCategorias();
                     salvarDados();
                     tabela.refresh();
                 }
             });
+        });
+
+        btnDetalhesCategoria.setOnAction(e -> {
+            CategoriaServico categoriaSelecionada = campoCategoria.getSelectionModel().getSelectedItem();
+
+            if (categoriaSelecionada == null) {
+                alerta("Selecione uma categoria para ver os detalhes.");
+                return;
+            }
+
+            new CategoriaDetalhesModal().show(stage, categoriaSelecionada);
         });
     }
 
@@ -279,8 +311,7 @@ public class ServicoView extends Application {
     }
 
     private void salvarCategorias() {
-        ArrayList<Object> categorias = new ArrayList<>(categoria);
-        RepositoryManager.salvar(CATEGORIA_ARQUIVO, categorias);
+        RepositoryManager.salvar(CATEGORIA_ARQUIVO, new ArrayList<>(todasCategorias));
     }
 
     private void carregarServicos() {
@@ -294,11 +325,24 @@ public class ServicoView extends Application {
 
     private void carregarCategorias() {
         ArrayList<Object> dados = RepositoryManager.carregar(CATEGORIA_ARQUIVO);
+        todasCategorias.clear();
         categoria.clear();
 
         for (Object obj : dados) {
-            if (obj instanceof CategoriaServico) {
-                categoria.add((CategoriaServico) obj);
+            if (obj instanceof CategoriaServico categoriaServico) {
+                todasCategorias.add(categoriaServico);
+                if (categoriaServico.isStatus()) {
+                    categoria.add(categoriaServico);
+                }
+            }
+        }
+    }
+
+    private void recarregarComboCategorias() {
+        categoria.clear();
+        for (CategoriaServico c : todasCategorias) {
+            if (c.isStatus()) {
+                categoria.add(c);
             }
         }
     }

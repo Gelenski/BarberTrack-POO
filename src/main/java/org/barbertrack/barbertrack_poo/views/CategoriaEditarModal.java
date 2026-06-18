@@ -26,6 +26,10 @@ public class CategoriaEditarModal {
         TextField campoDescricao = new TextField();
         campoDescricao.setText(categoria.getDescricao());
 
+        Label labelStatus = new Label("Ativo:");
+        CheckBox checkStatus = new CheckBox();
+        checkStatus.setSelected(categoria.isStatus());
+
         Button btnSalvar = new Button("Salvar");
         Button btnCancelar = new Button("Cancelar");
 
@@ -40,8 +44,11 @@ public class CategoriaEditarModal {
         form.add(labelDescricao, 0, 1);
         form.add(campoDescricao, 1, 1);
 
+        form.add(labelStatus, 0, 2);
+        form.add(checkStatus, 1, 2);
+
         HBox botoes = new HBox(8, btnSalvar, btnCancelar);
-        form.add(botoes, 1, 2);
+        form.add(botoes, 1, 3);
 
         btnSalvar.setOnAction(e -> {
             String nome = campoNome.getText().trim();
@@ -67,13 +74,14 @@ public class CategoriaEditarModal {
 
             categoria.setNome(nome);
             categoria.setDescricao(descricao);
+            categoria.setStatus(checkStatus.isSelected());
 
             modal.close();
         });
 
         btnCancelar.setOnAction(e -> modal.close());
 
-        Scene scene = new Scene(form, 420, 180);
+        Scene scene = new Scene(form, 420, 210);
         modal.setScene(scene);
         modal.showAndWait();
 
